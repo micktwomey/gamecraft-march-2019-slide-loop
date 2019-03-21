@@ -7,7 +7,10 @@ import Browser
 import Element exposing (centerX, centerY, fill, image, rgba, width)
 import Element.Background as Background
 import Html exposing (Html)
+import Time
 
+sleepTime : Float
+sleepTime = 60000
 
 type alias Slide =
     { name : String
@@ -26,7 +29,7 @@ type alias Flags =
 
 
 type Msg
-    = Noop
+    = Tick Time.Posix
 
 
 flagsToSlides : Flags -> Array.Array Slide
@@ -34,6 +37,15 @@ flagsToSlides flags =
     List.map (\flag -> Slide (Tuple.first flag) (Tuple.second flag)) flags
         |> Array.fromList
 
+getNextSlide : Array.Array Slide -> Int -> Int
+getNextSlide slides currentSlide =
+    let
+        nextSlide = currentSlide + 1
+    in
+        if nextSlide + 1 > Array.length slides then
+            0
+        else
+            nextSlide
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
@@ -56,12 +68,16 @@ view model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        Tick time ->
+            ( { model | currentSlide = getNextSlide model.slides model.currentSlide }
+            , Cmd.none
+            )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Time.every sleepTime Tick
 
 
 main =
