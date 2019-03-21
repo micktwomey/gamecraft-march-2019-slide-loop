@@ -2,57 +2,67 @@ module Main exposing (main)
 
 {-| -}
 
+import Array
 import Browser
-import Element exposing (centerX, centerY, image, rgba)
+import Element exposing (centerX, centerY, fill, image, rgba, width)
 import Element.Background as Background
 import Html exposing (Html)
 
 
--- import Element.Font as Font
--- import Element.Input
--- import Element.Lazy
--- main =
---     Element.layout
---         [ Background.color (rgba 0 0 0 1)
---         ]
---     <|
---         image
---             [ centerX, centerY ]
---             {src= "/Untitled.001.jpg", description= "Slide 1"}
+type alias Slide =
+    { name : String
+    , src : String
+    }
 
 
 type alias Model =
-    (String, String)
+    { slides : Array.Array Slide
+    , currentSlide : Int
+    }
 
 
 type alias Flags =
-    List (String, String)
+    List ( String, String )
+
 
 type Msg
     = Noop
 
+
+flagsToSlides : Flags -> Array.Array Slide
+flagsToSlides flags =
+    List.map (\flag -> Slide (Tuple.first flag) (Tuple.second flag)) flags
+        |> Array.fromList
+
+
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( List.head flags |> Maybe.withDefault ("none", "none") , Cmd.none )
+    ( Model (flagsToSlides flags) 0, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
+    let
+        currentSlide =
+            model.slides |> Array.get model.currentSlide |> Maybe.withDefault (Slide "none" "none")
+    in
     Element.layout
-        [ Background.color (rgba 0 0 0 1)
-        ]
+        []
     <|
         image
-            [ centerX, centerY, Element.width Element.fill ]
-            {src = model |> Tuple.second, description = "Slide " ++ (model |> Tuple.first)}
+            [ centerX, centerY, width fill ]
+            { src = currentSlide.src, description = "Slide " ++ currentSlide.name }
 
-update : Msg -> Model -> (Model, Cmd Msg)
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    (model, Cmd.none)
+    ( model, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
+
 
 main =
     Browser.element
