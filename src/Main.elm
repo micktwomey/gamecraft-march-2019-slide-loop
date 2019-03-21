@@ -9,8 +9,11 @@ import Element.Background as Background
 import Html exposing (Html)
 import Time
 
+
 sleepTime : Float
-sleepTime = 60000
+sleepTime =
+    60000
+
 
 type alias Slide =
     { name : String
@@ -37,15 +40,19 @@ flagsToSlides flags =
     List.map (\flag -> Slide (Tuple.first flag) (Tuple.second flag)) flags
         |> Array.fromList
 
+
 getNextSlide : Array.Array Slide -> Int -> Int
 getNextSlide slides currentSlide =
     let
-        nextSlide = currentSlide + 1
+        nextSlide =
+            currentSlide + 1
     in
-        if nextSlide + 1 > Array.length slides then
-            0
-        else
-            nextSlide
+    if nextSlide + 1 > Array.length slides then
+        0
+
+    else
+        nextSlide
+
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
@@ -59,7 +66,7 @@ view model =
             model.slides |> Array.get model.currentSlide |> Maybe.withDefault (Slide "none" "none")
     in
     Element.layout
-        []
+        [ Background.color (rgba 0 0 0 1) ]
     <|
         image
             [ centerX, centerY, width fill ]
