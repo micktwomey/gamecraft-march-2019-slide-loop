@@ -7,6 +7,8 @@ import Browser
 import Element exposing (centerX, centerY, fill, image, rgba, width)
 import Element.Background as Background
 import Html exposing (Html)
+import Keyboard exposing (Key(..))
+import Keyboard.Arrows
 import Time
 
 
@@ -24,6 +26,7 @@ type alias Slide =
 type alias Model =
     { slides : Array.Array Slide
     , currentSlide : Int
+    , pressedKeys : List Key
     }
 
 
@@ -33,6 +36,7 @@ type alias Flags =
 
 type Msg
     = Tick Time.Posix
+    | KeyMsg Keyboard.Msg
 
 
 flagsToSlides : Flags -> Array.Array Slide
@@ -54,9 +58,22 @@ getNextSlide slides currentSlide =
         nextSlide
 
 
+getPreviousSlide : Array.Array Slide -> Int -> Int
+getPreviousSlide slides currentSlide =
+    let
+        previousSlide =
+            currentSlide - 1
+    in
+    if previousSlide < 0 then
+        (Array.length slides) - 1
+
+    else
+        previousSlide
+
+
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( Model (flagsToSlides flags) 0, Cmd.none )
+    ( Model (flagsToSlides flags) 0 [], Cmd.none )
 
 
 view : Model -> Html Msg
@@ -81,10 +98,32 @@ update msg model =
             , Cmd.none
             )
 
+        KeyMsg keyMsg ->
+            let
+                arrows =
+                    Keyboard.Arrows.arrows model.pressedKeys
+
+                nextSlide =
+                    if arrows.x == -1 then
+                        getPreviousSlide model.slides model.currentSlide
+
+                    else if arrows.x == 1 then
+                        getNextSlide model.slides model.currentSlide
+
+                    else
+                        model.currentSlide
+            in
+            ( { model | pressedKeys = Keyboard.update keyMsg model.pressedKeys, currentSlide = nextSlide }
+            , Cmd.none
+            )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every sleepTime Tick
+    Sub.batch
+        [ Sub.map KeyMsg Keyboard.subscriptions
+        , Time.every sleepTime Tick
+        ]
 
 
 main =
