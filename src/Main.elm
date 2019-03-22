@@ -65,7 +65,7 @@ getPreviousSlide slides currentSlide =
             currentSlide - 1
     in
     if previousSlide < 0 then
-        (Array.length slides) - 1
+        Array.length slides - 1
 
     else
         previousSlide
